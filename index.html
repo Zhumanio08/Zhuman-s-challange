@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zhuman's summer cramming challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #5e72e4 0%, #825ee4 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.2) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(255,255,255,0.15) 0%, transparent 40%);
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-weight: 300;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .calendar-container {
+            padding: 30px;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            background: #f8f9fe;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .month-year {
+            font-size: 1.8rem;
+            color: #525f7f;
+            font-weight: 600;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        .nav-btn {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            color: #5e72e4;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .nav-btn:hover {
+            background: #5e72e4;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #8898aa;
+            padding: 10px 0;
+            background: #f8f9fe;
+            border-radius: 12px;
+        }
+        
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        
+        .day {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+            background-color: #fff;
+            border: 2px solid #e9ecef;
+            font-size: 1.1rem;
+            color: #525f7f;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        
+        .day:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fe;
+            border-color: #5e72e4;
+        }
+        
+        .day.empty {
+            visibility: hidden;
+        }
+        
+        .start-day {
+            border: 3px solid #fb6340;
+            animation: pulse 2s infinite;
+            background: #fff;
+        }
+        
+        .end-day {
+            border: 3px solid #fb6340;
+            animation: pulse 2s infinite;
+            background: #fff;
+        }
+        
+        .day.active {
+            background-color: #5e72e4;
+            color: white;
+            box-shadow: 0 5px 15px rgba(94, 114, 228, 0.4);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(251, 99, 64, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(251, 99, 64, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(251, 99, 64, 0); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 450px;
+            overflow: hidden;
+            position: relative;
+            transform: scale(0.95);
+            animation: modalAppear 0.4s forwards;
+        }
+        
+        @keyframes modalAppear {
+            to { transform: scale(1); }
+        }
+        
+        .card-header {
+            padding: 35px 20px 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .card-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #5e72e4 0%, #825ee4 100%);
+        }
+        
+        .date-display {
+            font-size: 1.3rem;
+            color: #8898aa;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .time-display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #32325d;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .card-body {
+            padding: 25px;
+            background: #f8f9fe;
+        }
+        
+        .activity-title {
+            text-align: center;
+            color: #525f7f;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        
+        .activity-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            color: #525f7f;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-list li:hover {
+            transform: translateX(5px);
+            color: #5e72e4;
+        }
+        
+        .activity-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-list li i {
+            margin-right: 12px;
+            width: 32px;
+            height: 32px;
+            background: #f8f9fe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e72e4;
+            font-size: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8f9fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #8898aa;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .close-btn:hover {
+            background: #5e72e4;
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        /* Card color schemes */
+        .default-card .card-header {
+            background: #fff;
+        }
+        
+        .green-card .card-header {
+            background: linear-gradient(135deg, #2dce89 0%, #2dcecc 100%);
+        }
+        
+        .green-card .time-display,
+        .green-card .date-display {
+            color: white;
+        }
+        
+        .orange-card .card-header {
+            background: linear-gradient(135deg, #fb6340 0%, #fbb140 100%);
+        }
+        
+        .orange-card .time-display,
+        .orange-card .date-display {
+            color: white;
+        }
+        
+        .red-card .card-header {
+            background: linear-gradient(135deg, #f5365c 0%, #f56036 100%);
+        }
+        
+        .red-card .time-display,
+        .red-card .date-display {
+            color: white;
+        }
+        
+        .footer-note {
+            text-align: center;
+            padding: 25px;
+            color: #8898aa;
+            font-size: 1rem;
+            border-top: 1px solid #e9ecef;
+            margin-top: 15px;
+            background: #f8f9fe;
+        }
+        
+        .total-time {
+            text-align: center;
+            padding: 25px;
+            background: #5e72e4;
+            color: white;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(94, 114, 228, 0.2);
+        }
+        
+        .total-label {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .total-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        /* Edit button */
+        .edit-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8f9fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #8898aa;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .edit-btn:hover {
+            background: #5e72e4;
+            color: white;
+        }
+        
+        /* Edit modal */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .edit-content {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+            transform: scale(0.95);
+            animation: modalAppear 0.4s forwards;
+        }
+        
+        .edit-title {
+            font-size: 1.5rem;
+            color: #525f7f;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #525f7f;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #5e72e4;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4a5cbf;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fe;
+            color: #525f7f;
+            margin-right: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .day {
+                font-size: 0.9rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .month-year {
+                font-size: 1.5rem;
+            }
+            
+            .total-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>Zhuman's summer cramming challenge</h1>
+                <p>Тут вы можете следить за моей активностью</p>
+            </div>
+        </div>
+        
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="navigation">
+                    <button class="nav-btn"><i class="fas fa-chevron-left"></i></button>
+                </div>
+                <div class="month-year">Июль 2025</div>
+                <div class="navigation">
+                    <button class="nav-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            
+            <div class="weekdays">
+                <div>Пн</div>
+                <div>Вт</div>
+                <div>Ср</div>
+                <div>Чт</div>
+                <div>Пт</div>
+                <div>Сб</div>
+                <div>Вс</div>
+            </div>
+            
+            <div class="days" id="calendarDays">
+                <!-- Calendar days will be populated by JavaScript -->
+            </div>
+            
+            <div class="total-time">
+                <div class="total-label">Общее время чаллинга</div>
+                <div class="total-value" id="totalTime">0 часов</div>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            Нажмите на день, чтобы увидеть активность Жумана
+        </div>
+    </div>
+    
+    <div class="modal" id="activityModal">
+        <div class="modal-content default-card" id="activityCard">
+            <button class="edit-btn" id="editActivity">
+                <i class="fas fa-pencil-alt"></i>
+            </button>
+            <div class="close-btn" id="closeModal">
+                <i class="fas fa-times"></i>
+            </div>
+            <div class="card-header">
+                <div class="date-display">1 июля 2025</div>
+                <div class="time-display">0 часов</div>
+                <div>Потрачено времени</div>
+            </div>
+            <div class="card-body">
+                <div class="activity-title">Что я делал:</div>
+                <ul class="activity-list" id="activityList">
+                    <li><i class="fas fa-moon"></i> День отдыха</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="edit-modal" id="editModal">
+        <div class="edit-content">
+            <div class="edit-title">Редактировать активность</div>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editDate">Дата</label>
+                    <input type="text" id="editDate" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editHours">Часы чаллинга</label>
+                    <input type="number" id="editHours" class="form-control" step="0.1" min="0" max="24">
+                </div>
+                <div class="form-group">
+                    <label for="editActivities">Активности (каждая с новой строки)</label>
+                    <textarea id="editActivities" class="form-control" rows="5"></textarea>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Данные активности (ЗДЕСЬ ВЫ МОЖЕТЕ РЕДАКТИРОВАТЬ ДАННЫЕ)
+        const activityData = {
+            // Формат:
+            // 'YYYY-MM-DD': { 
+            //   hours: количество часов, 
+            //   activities: ["активность 1", "активность 2"] 
+            // }
+            '2025-07-01': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                    "none",
+                    ""
+                ] 
+            },
+            '2025-07-02': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                    "none"
+                ] 
+            },
+
+            '2025-07-03': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                ] 
+            },
+
+            '2025-07-05': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                    "none"
+                ] 
+            },
+            '2025-07-10': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                    "none"
+                ] 
+            },
+            '2025-07-15': { 
+                hours: 0, 
+                activities: [
+                    "none"
+                ] 
+            },
+            '2025-07-20': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                    "none"
+                ] 
+            },
+            '2025-07-25': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                    "none"
+                ] 
+            },
+            '2025-07-31': { 
+                hours: 0, 
+                activities: [
+                    "none",
+                    "none"
+                ] 
+            }
+
+
+
+        };
+        
+        // Текущая выбранная дата
+        let currentDate = null;
+        
+        // Генерация календаря для июля 2025
+        function generateCalendar() {
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            // Июль 2025 начинается во вторник (1 = понедельник, 2 = вторник)
+            const startDay = 2;
+            const daysInMonth = 31;
+            
+            // Добавляем пустые дни для начала месяца
+            for (let i = 1; i < startDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'day empty';
+                calendarDays.appendChild(emptyDay);
+            }
+            
+            // Добавляем дни месяца
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day';
+                dayElement.textContent = day;
+                
+                const dateStr = `2025-07-${day < 10 ? '0' + day : day}`;
+                dayElement.dataset.date = dateStr;
+                
+                // Выделяем начальную и конечную даты
+                if (day === 1 || day === 10) {
+                    dayElement.classList.add(day === 1 ? 'start-day' : 'end-day');
+                }
+                
+                // Добавляем обработчик клика
+                dayElement.addEventListener('click', function() {
+                    openActivityModal(dateStr);
+                });
+                
+                calendarDays.appendChild(dayElement);
+            }
+            
+            // Добавляем пустые дни в конце, чтобы завершить сетку
+            const totalCells = 42;
+            const totalDays = startDay - 1 + daysInMonth;
+            for (let i = totalDays; i < totalCells; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'day empty';
+                calendarDays.appendChild(emptyDay);
+            }
+            
+            // Обновляем общее время
+            updateTotalTime();
+        }
+        
+        // Открытие модального окна с активностью
+        function openActivityModal(date) {
+            currentDate = date;
+            const modal = document.getElementById('activityModal');
+            const card = document.getElementById('activityCard');
+            const dateDisplay = card.querySelector('.date-display');
+            const timeDisplay = card.querySelector('.time-display');
+            const activityList = document.getElementById('activityList');
+            
+            // Форматируем дату для отображения
+            const dateObj = new Date(date);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            dateDisplay.textContent = dateObj.toLocaleDateString('ru-RU', options);
+            
+            // Устанавливаем активность
+            if (activityData[date]) {
+                const data = activityData[date];
+                timeDisplay.textContent = `${data.hours} ${getHoursWord(data.hours)}`;
+                activityList.innerHTML = '';
+                
+                data.activities.forEach(activity => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<i class="fas fa-check-circle"></i> ${activity}`;
+                    activityList.appendChild(li);
+                });
+                
+                // Устанавливаем цвет карточки в зависимости от времени
+                card.className = 'modal-content default-card';
+                if (data.hours >= 3) {
+                    card.classList.add('red-card');
+                } else if (data.hours >= 2) {
+                    card.classList.add('orange-card');
+                } else if (data.hours >= 1) {
+                    card.classList.add('green-card');
+                }
+            } else {
+                timeDisplay.textContent = "0 часов";
+                activityList.innerHTML = '<li><i class="fas fa-moon"></i> День отдыха</li>';
+                card.className = 'modal-content default-card';
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Открытие модального окна редактирования
+        function openEditModal() {
+            const modal = document.getElementById('editModal');
+            const dateInput = document.getElementById('editDate');
+            const hoursInput = document.getElementById('editHours');
+            const activitiesInput = document.getElementById('editActivities');
+            
+            // Форматируем дату для отображения
+            const dateObj = new Date(currentDate);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            dateInput.value = dateObj.toLocaleDateString('ru-RU', options);
+            
+            // Заполняем данные
+            if (activityData[currentDate]) {
+                hoursInput.value = activityData[currentDate].hours;
+                activitiesInput.value = activityData[currentDate].activities.join('\n');
+            } else {
+                hoursInput.value = 0;
+                activitiesInput.value = 'День отдыха';
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Сохранение изменений
+        function saveActivity() {
+            const hoursInput = parseFloat(document.getElementById('editHours').value) || 0;
+            const activitiesInput = document.getElementById('editActivities').value;
+            
+            // Разбиваем активности по строкам и фильтруем пустые
+            const activities = activitiesInput.split('\n')
+                .map(a => a.trim())
+                .filter(a => a.length > 0);
+            
+            // Сохраняем данные
+            if (hoursInput > 0 || activities.length > 0) {
+                activityData[currentDate] = {
+                    hours: hoursInput,
+                    activities: activities.length > 0 ? activities : ['День отдыха']
+                };
+            } else {
+                delete activityData[currentDate];
+            }
+            
+            // Обновляем общее время
+            updateTotalTime();
+            
+            // Закрываем модальные окна
+            document.getElementById('editModal').style.display = 'none';
+            document.getElementById('activityModal').style.display = 'none';
+            
+            // Переоткрываем модальное окно активности, чтобы обновить данные
+            openActivityModal(currentDate);
+        }
+        
+        // Обновление общего времени чаллинга
+        function updateTotalTime() {
+            let totalHours = 0;
+            
+            // Суммируем часы из всех дней
+            for (const date in activityData) {
+                totalHours += activityData[date].hours;
+            }
+            
+            // Обновляем отображение
+            document.getElementById('totalTime').textContent = 
+                `${totalHours.toFixed(1)} ${getHoursWord(totalHours)}`;
+        }
+        
+        // Helper function to format hours correctly in Russian
+        function getHoursWord(hours) {
+            if (hours === 1 || (hours > 1 && hours < 2)) return 'час';
+            if (hours > 1 && hours < 5) return 'часа';
+            return 'часов';
+        }
+        
+        // Инициализация событий
+        function initEvents() {
+            // Закрытие модального окна активности
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('activityModal').style.display = 'none';
+            });
+            
+            // Закрытие модального окна редактирования
+            document.getElementById('cancelEdit').addEventListener('click', function() {
+                document.getElementById('editModal').style.display = 'none';
+            });
+            
+            // Открытие модального окна редактирования
+            document.getElementById('editActivity').addEventListener('click', openEditModal);
+            
+            // Сохранение изменений
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveActivity();
+            });
+            
+            // Закрытие модальных окон при клике вне их
+            window.addEventListener('click', function(event) {
+                if (event.target === document.getElementById('activityModal')) {
+                    document.getElementById('activityModal').style.display = 'none';
+                }
+                if (event.target === document.getElementById('editModal')) {
+                    document.getElementById('editModal').style.display = 'none';
+                }
+            });
+            
+            // Обработчики для кнопок навигации
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Анимация нажатия
+                    this.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+        }
+        
+        // Инициализация приложения
+        function init() {
+            generateCalendar();
+            initEvents();
+        }
+        
+        // Запуск приложения
+        init();
+    </script>
+</body>
+</html>
